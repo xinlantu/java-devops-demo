@@ -1,23 +1,45 @@
-  //需要安装docker、docker pipeline插件
+pipeline {
 
-   pipeline {
-agent none
-    stages {
-    stage('Example Build') {
-    agent {
- docker 'maven:3-alpine'
-    //args 是指定    docker run 的所有指令
-   args '-v /var/jenkins_home/maven/.m2:/root/.m2'  }
-   steps {
- echo 'Hello, Maven'
-sh 'mvn --version'
-       }
-    }
-   stage('Example Test') {
-agent { docker 'openjdk:8-jre' }
+agent any
+
+stages {
+
+stage(‘build’) {
+
 steps {
-    echo 'Hello, JDK'
-    sh 'java -version'
-     }
-    }    }
- }
+
+sh ‘javac -d . src/*.java’
+
+sh ‘echo Main-Class: Rectangulator > MANIFEST.MF’
+
+sh ‘jar -cvmf MANIFEST.MF rectangle.jar *.class’
+
+}
+
+}
+
+stage(‘run’) {
+
+steps {
+
+sh ‘java -jar rectangle.jar 7 9’
+
+}
+
+}
+
+}
+
+post {
+
+success {
+
+archiveArtifacts artifacts: ‘rectangle.jar’, fingerprint:
+
+true
+
+}
+
+}
+
+}
